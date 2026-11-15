@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facial Expression Recognition</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script defer src="{{ url_for('static', filename='camera.js') }}"></script>
+</head>
+<body>
+  <h1>Facial Expression Recognition</h1>
+  <main class="panels">
+    <section aria-labelledby="camera-heading">
+      <h2 id="camera-heading">Webcam</h2>
+      <video id="preview" autoplay muted playsinline></video>
+      <button id="start-camera" type="button">Start Camera</button>
+      <button id="stop-camera" type="button" disabled>Stop Camera</button>
+      <p id="camera-status" role="status">Camera is off</p>
+    </section>
+    <section aria-labelledby="prediction-heading">
+      <h2 id="prediction-heading">Predicted expression</h2>
+      <p id="expression">Waiting for camera</p>
+      <p id="emoji" aria-hidden="true"></p>
+      <p>Processing time <output id="processing-time">—</output></p>
+    </section>
+  </main>
+</body>
+</html>

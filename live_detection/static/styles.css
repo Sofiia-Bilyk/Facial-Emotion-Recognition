@@ -1,0 +1,48 @@
+body {
+  margin: 0 auto;
+  max-width: 72rem;
+  padding: 2rem 1rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #17243a;
+  background: #f4f7fb;
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.panels section {
+  padding: 1.25rem;
+  background: white;
+  border: 1px solid #d9e2ef;
+  border-radius: 0.75rem;
+}
+
+#preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: #101827;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#expression {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+#emoji {
+  min-height: 1em;
+  font-size: 5rem;
+  margin: 0.25em 0;
+}
+
+@media (max-width: 44rem) {
+  .panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,3 +1,7 @@
+import csv
+import shutil
+from datetime import datetime
+from time import perf_counter
 from pathlib import Path
 
 import torch
@@ -15,16 +19,45 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr=0.001)
 
-    num_epochs = 20
+    num_epochs = 200
     best_macro_f1 = -1.0
-    checkpoint_path = Path(__file__).resolve().with_name('best_model.pt')
+    models_dir = Path(__file__).resolve().parent / "best_models"
+    models_dir.mkdir(exist_ok=True)
+
+    started_at = datetime.now()
+    run_date = started_at.strftime("%m%d%Y")
+    logs_dir = models_dir.parent / "logs"
+    logs_dir.mkdir(exist_ok=True)
+    run_name = f"{num_epochs}epoch_train_{started_at:%m%d%Y%H%M}"
+    run_dir = logs_dir / run_name
+
+    attempt = 1
+    while True:
+        try:
+            run_dir.mkdir()
+            break
+        except FileExistsError:
+            attempt += 1
+            run_dir = logs_dir / f"{run_name}_{attempt:02d}"
+
+    metrics_path = run_dir / "epoch_metrics.csv"
+    with metrics_path.open("w", newline="", encoding="utf-8") as metrics_file:
+        csv.writer(metrics_file).writerow([
+            "epoch", "train_loss", "train_accuracy", "val_loss",
+            "val_accuracy", "val_macro_f1", "elapsed_seconds",
+            "saved_best_checkpoint",
+        ])
+    print(f"Logging epoch metrics to {metrics_path}")
+    checkpoint_path = models_dir / f"best_model_{num_epochs}epoch_{run_date}.pt"
 
     for epoch in range(1, num_epochs + 1):
         print(f"\nEpoch {epoch}/{num_epochs}")
+        epoch_started = perf_counter()
         model.train()
 
         total_loss = 0.0
         total_images = 0
+        train_correct = 0
         old_batch_size = 0
 
         for images, labels in train_loader:
@@ -37,6 +70,7 @@ if __name__ == "__main__":
             batch_size = labels.size(0)
             total_loss += loss.item() * batch_size
             total_images += batch_size
+            train_correct += (logits.detach().argmax(dim=1) == labels).sum().item()
             if total_images > old_batch_size+1000:
                 old_batch_size = total_images
                 print(f"Training loss on {total_images:,} images: {total_loss / total_images:.4f}")
@@ -84,7 +118,8 @@ if __name__ == "__main__":
                 f"{recall[label].item():>9.2%} {f1_per_class[label].item():>9.2%}"
             )
 
-        if macro_f1 > best_macro_f1:
+        saved_best = macro_f1 > best_macro_f1
+        if saved_best:
             best_macro_f1 = macro_f1
             torch.save(
                 {
@@ -95,4 +130,12 @@ if __name__ == "__main__":
                 },
                 checkpoint_path,
             )
+            shutil.copyfile(checkpoint_path, models_dir.parent / "best_model.pt")
             print(f"Saved {checkpoint_path.name} from epoch {epoch}")
+
+        with metrics_path.open("a", newline="", encoding="utf-8") as metrics_file:
+            csv.writer(metrics_file).writerow([
+                epoch, total_loss / total_images, train_correct / total_images,
+                val_loss_sum / val_total, val_correct / val_total, macro_f1,
+                round(perf_counter() - epoch_started, 3), saved_best,
+            ])

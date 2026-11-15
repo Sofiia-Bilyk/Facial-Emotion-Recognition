@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 import torch
@@ -8,8 +9,9 @@ from dataset import BATCH_SIZE, FaceDataset
 from model import build_model
 
 
-def load_best_model():
-    checkpoint_path = Path(__file__).resolve().with_name("best_model.pt")
+def load_best_model(checkpoint_path=None):
+    if checkpoint_path is None:
+        checkpoint_path = Path(__file__).resolve().with_name("best_model.pt")
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
 
     model = build_model()
@@ -40,7 +42,11 @@ def build_test_loader(class_names):
 
 
 if __name__ == "__main__":
-    model, class_names = load_best_model()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("checkpoint", nargs="?", type=Path, help="Path to a model checkpoint")
+    args = parser.parse_args()
+
+    model, class_names = load_best_model(args.checkpoint)
     test_loader = build_test_loader(class_names)
 
     num_classes = len(class_names)
