@@ -19,7 +19,7 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr=0.001)
 
-    num_epochs = 200
+    num_epochs = 500
     best_macro_f1 = -1.0
     models_dir = Path(__file__).resolve().parent / "best_models"
     models_dir.mkdir(exist_ok=True)

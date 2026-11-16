@@ -1,7 +1,7 @@
 from io import BytesIO
 from threading import Lock
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from PIL import Image
 
 from .face_detection import crop_largest_face, load_face_detector
@@ -19,6 +19,11 @@ prediction_lock = Lock()
 @app.get("/")
 def index():
     return render_template("index.html")
+
+
+@app.get("/bunny/<filename>")
+def bunny_image(filename):
+    return send_from_directory(f"{app.root_path}/bunny", filename)
 
 
 @app.post("/predict")
