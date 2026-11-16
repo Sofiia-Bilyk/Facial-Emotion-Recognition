@@ -111,6 +111,22 @@ if __name__ == "__main__":
         precision = true_positives / predicted_counts.clamp_min(1)
         recall = true_positives / actual_counts.clamp_min(1)
 
+        class_metrics_path = run_dir / "class_metrics.csv"
+        with class_metrics_path.open("a", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            if epoch == 1:
+                writer.writerow(["epoch", "expression", "precision", "recall", "f1", "support"])
+
+            for label, expression in enumerate(CLASS_NAMES):
+                writer.writerow([
+                    epoch,
+                    expression,
+                    precision[label].item(),
+                    recall[label].item(),
+                    f1_per_class[label].item(),
+                    actual_counts[label].item(),
+                ])
+
         print(f"{'Expression':<12} {'Precision':>9} {'Recall':>9} {'F1':>9}")
         for label, class_name in enumerate(CLASS_NAMES):
             print(
